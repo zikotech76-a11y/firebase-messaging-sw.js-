@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger Clone</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary-color: #0084FF;
+        --bg-color: #ffffff;
+        --light-gray: #f0f2f5;
+        --text-color: #050505;
+        --muted-text: #65676b;
+        --sent-msg: #0084FF;
+        --rcv-msg: #e4e6eb;
+        --badge-red: #fa383e;
+        --like-red: #fa383e;
+        --card-border: #e4e6eb;
+    }
+
+    [data-theme="dark"] {
+        --bg-color: #18191a;
+        --light-gray: #242526;
+        --text-color: #e4e6eb;
+        --muted-text: #b0b3b8;
+        --rcv-msg: #3a3b3c;
+        --card-border: #3a3b3c;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: var(--light-gray);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .phone-container {
+        width: 100%;
+        max-width: 450px;
+        height: 100vh;
+        background-color: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .page {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: var(--bg-color);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .page.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+        from { transform: scale(0.85); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .header {
+        height: 60px;
+        background: var(--bg-color);
+        border-bottom: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        flex-shrink: 0;
+    }
+
+    .header h1 {
+        font-size: 20px;
+        color: var(--text-color);
+        font-weight: 700;
+    }
+
+    .header-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .header-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--light-gray);
+        flex-shrink: 0;
+        display: none;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .icon-btn {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s;
+    }
+
+    .icon-btn:active { transform: scale(0.85); }
+
+    .auth-container {
+        padding: 30px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        align-items: center;
+    }
+
+    .app-logo {
+        font-size: 80px;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+
+    .app-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 40px;
+        color: var(--text-color);
+    }
+
+    .input-group {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .input-group input, .input-group textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid #ccc;
+        background: var(--light-gray);
+        font-size: 16px;
+        outline: none;
+        transition: 0.2s;
+        text-align: right;
+        color: var(--text-color);
+        font-family: inherit;
+    }
+
+    .input-group textarea {
+        resize: none;
+        min-height: 90px;
+    }
+
+    .input-group input:focus, .input-group textarea:focus {
+        border-color: var(--primary-color);
+        background: var(--bg-color);
+        box-shadow: 0 0 0 2px rgba(0,132,255,0.2);
+    }
+
+    .btn {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-top: 10px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: var(--light-gray);
+        color: var(--text-color);
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .auth-switch {
+        margin-top: 20px;
+        color: var(--primary-color);
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .search-container {
+        padding: 10px 16px;
+        display: flex;
+        gap: 8px;
+        background: var(--bg-color);
+        flex-shrink: 0;
+    }
+
+    .search-box {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: var(--light-gray);
+        border-radius: 20px;
+        padding: 0 12px;
+    }
+
+    .search-box input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 8px;
+        outline: none;
+        font-size: 15px;
+        text-align: right;
+        color: var(--text-color);
+    }
+
+    .scroll-body {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .section-label {
+        padding: 14px 16px 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted-text);
+    }
+
+    .list-container {
+        padding: 0 8px;
+    }
+
+    .list-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 8px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .list-item:hover {
+        background-color: var(--light-gray);
+    }
+
+    .avatar-wrap {
+        position: relative;
+        margin-left: 12px;
+        flex-shrink: 0;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        overflow: hidden;
+        object-fit: cover;
+    }
+
+    .avatar-sm {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .unread-badge {
+        background: var(--badge-red);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+        line-height: 1;
+    }
+
+    .item-side {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin-right: 4px;
+        min-width: 34px;
+        flex-shrink: 0;
+    }
+
+    .item-time {
+        font-size: 12px;
+        color: var(--muted-text);
+        white-space: nowrap;
+    }
+
+    .item-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .item-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--text-color);
+    }
+
+    .item-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--muted-text);
+        margin-top: 2px;
+    }
+
+    .item-msg {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--bg-color);
+    }
+
+    .msg-wrapper {
+        display: flex;
+        width: 100%;
+    }
+
+    .msg-wrapper.sent {
+        justify-content: flex-start;
+    }
+
+    .msg-wrapper.received {
+        justify-content: flex-end;
+    }
+
+    .msg-bubble {
+        max-width: 70%;
+        padding: 10px 16px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.4;
+        word-wrap: break-word;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .sent .msg-bubble {
+        background-color: var(--sent-msg);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .received .msg-bubble {
+        background-color: var(--rcv-msg);
+        color: var(--text-color);
+        border-bottom-left-radius: 4px;
+    }
+
+    /* ===== رسائل صوتية داخل فقاعة الشات ===== */
+    .audio-msg-bubble {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 190px;
+    }
+    .audio-play-btn {
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        flex-shrink: 0;
+    }
+    .audio-progress-track {
+        flex: 1;
+        height: 4px;
+        background: rgba(255,255,255,0.4);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    .received .audio-progress-track {
+        background: rgba(0,0,0,0.15);
+    }
+    .audio-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: currentColor;
+    }
+    .audio-duration {
+        font-size: 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .hidden-audio-el { display: none; }
+
+    .chat-input-bar {
+        padding: 12px 16px;
+        border-top: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg-color);
+    }
+
+    .chat-input-bar input {
+        flex: 1;
+        background: var(--light-gray);
+        border: none;
+        padding: 12px 16px;
+        border-radius: 20px;
+        outline: none;
+        font-size: 15px;
+        text-align: right;
+        color: var(--text-color);
+    }
+
+    /* ===== شريط تسجيل الصوت وشريط معاينة التسجيل ===== */
+    .voice-recording-bar, .voice-preview-bar {
+        padding: 12px 16px;
+        border-top: 1px solid var(--card-border);
+        display: none;
+        align-items: center;
+        gap: 14px;
+        background: var(--bg-color);
+    }
+    .recording-indicator {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--text-color);
+        font-weight: 600;
+        font-size: 15px;
+    }
+    .rec-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--badge-red);
+        animation: recBlink 1s infinite;
+        flex-shrink: 0;
+    }
+    @keyframes recBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .voice-preview-duration {
+        flex: 1;
+        text-align: center;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
+    .toast {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 14px;
+        display: none;
+        z-index: 2000;
+        white-space: nowrap;
+    }
+
+    .loader {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255,255,255,0.7);
+        z-index: 999;
+        justify-content: center;
+        align-items: center;
+    }
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--light-gray);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* نوافذ منبثقة عامة */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1500;
+    }
+    .modal-overlay.active {
+        display: flex;
+    }
+    .modal-box {
+        background: var(--bg-color);
+        border-radius: 16px;
+        padding: 24px;
+        width: 85%;
+        max-width: 340px;
+        animation: popIn 0.2s ease-out;
+    }
+    .modal-box h3 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        color: var(--text-color);
+    }
+
+    /* ===== قائمة سياقية عائمة (تُستخدم للضغط المطول على الرسائل ولقائمة المنشورات) ===== */
+    .context-menu {
+        position: fixed;
+        display: none;
+        background: var(--bg-color);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+        z-index: 3000;
+        min-width: 180px;
+        overflow: hidden;
+    }
+    .context-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 13px 16px;
+        background: none;
+        border: none;
+        text-align: right;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+    .context-menu-item:active { background: var(--light-gray); }
+    .context-menu-danger { color: var(--badge-red); }
+    .context-menu-danger .material-icons { color: var(--badge-red); }
+    .context-menu-overlay-catcher {
+        position: fixed;
+        inset: 0;
+        z-index: 2999;
+        display: none;
+    }
+
+    /* أزرار عائمة (FAB) */
+    .fab {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        box-shadow: 0 4px 14px rgba(0,132,255,0.4);
+        cursor: pointer;
+        z-index: 50;
+        transition: transform 0.15s ease;
+    }
+    .fab:active { transform: scale(0.9); }
+
+    /* اختيار نوع المنشور */
+    .post-type-choice {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    .post-type-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--light-gray);
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: 0.15s;
+    }
+    .post-type-btn:active { transform: scale(0.97); }
+    .post-type-btn .material-icons { color: var(--primary-color); font-size: 26px; }
+
+    /* منشورات - بطاقة */
+    .post-card {
+        border-bottom: 8px solid var(--light-gray);
+        padding-bottom: 6px;
+        background: var(--bg-color);
+    }
+    .post-header {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+    }
+    .post-header-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .post-username {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text-color);
+    }
+    .post-time {
+        font-size: 12px;
+        color: var(--muted-text);
+    }
+    .post-menu-btn {
+        background: none;
+        border: none;
+        color: var(--muted-text);
+        font-size: 22px;
+        cursor: pointer;
+        padding: 6px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .post-caption {
+        padding: 0 16px 10px;
+        font-size: 15px;
+        color: var(--text-color);
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .post-media {
+        width: 100%;
+        max-height: 420px;
+        object-fit: cover;
+        background: #000;
+        display: block;
+    }
+    .post-text-only {
+        margin: 0 16px 12px;
+        padding: 18px;
+        background: var(--light-gray);
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--text-color);
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .post-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 6px 16px 4px;
+    }
+    .post-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted-text);
+        cursor: pointer;
+        padding: 6px 4px;
+    }
+    .post-action-btn .material-icons {
+        font-size: 22px;
+        transition: transform 0.15s;
+    }
+    .post-action-btn:active .material-icons { transform: scale(1.3); }
+    .post-action-btn.liked { color: var(--like-red); }
+    .post-action-btn.liked .material-icons { color: var(--like-red); }
+
+    .media-preview {
+        width: 100%;
+        max-height: 220px;
+        object-fit: contain;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        background: var(--light-gray);
+    }
+    .file-picker-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        border-radius: 12px;
+        border: 2px dashed #bbb;
+        background: var(--light-gray);
+        color: var(--muted-text);
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 16px;
+    }
+
+    /* تعليقات */
+    .comment-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 16px;
+    }
+    .comment-bubble {
+        background: var(--light-gray);
+        border-radius: 14px;
+        padding: 8px 14px;
+        flex: 1;
+    }
+    .comment-username {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text-color);
+    }
+    .comment-text {
+        font-size: 14px;
+        color: var(--text-color);
+        margin-top: 2px;
+        word-wrap: break-word;
+    }
+    .comment-time {
+        font-size: 11px;
+        color: var(--muted-text);
+        margin-top: 4px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--muted-text);
+    }
+    .empty-state .material-icons {
+        font-size: 48px;
+        opacity: 0.5;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .load-more-btn {
+        display: block;
+        margin: 12px auto;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: none;
+        background: var(--light-gray);
+        color: var(--primary-color);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .profile-photo-preview-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    .profile-photo-preview {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--light-gray);
+    }
+</style>
+</head>
+<body>
+<div class="phone-container">
+    <div class="loader" id="loader"><div class="spinner"></div></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- طبقة شفافة لالتقاط الضغط خارج القائمة السياقية وإغلاقها -->
+    <div class="context-menu-overlay-catcher" id="context-menu-catcher" onclick="closeAllContextMenus()"></div>
+    <!-- قائمة سياقية عائمة موحّدة: تُستخدم لكل من (الضغط المطول على رسالة) و(قائمة نقاط المنشور) -->
+    <div class="context-menu" id="message-context-menu"></div>
+
+    <!-- نافذة تبديل اسم المستخدم -->
+    <div class="modal-overlay" id="username-modal">
+        <div class="modal-box">
+            <h3>تبديل اسم المستخدم</h3>
+            <div class="input-group"><input type="text" id="new-username-input" placeholder="الاسم الجديد"></div>
+            <button class="btn btn-primary" onclick="submitUsernameChange()">حفظ</button>
+            <button class="btn btn-secondary" onclick="closeUsernameModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل صورة البروفايل -->
+    <div class="modal-overlay" id="photo-modal">
+        <div class="modal-box">
+            <h3>تعديل صورة البروفايل</h3>
+            <div class="profile-photo-preview-wrap">
+                <img class="profile-photo-preview" id="photo-preview-img" src="">
+            </div>
+            <label class="file-picker-btn" style="margin-bottom:12px;">
+                <span class="material-icons">add_a_photo</span>
+                اختيار صورة
+                <input type="file" accept="image/*" id="photo-file-input" style="display:none" onchange="handlePhotoFileSelect(event)">
+            </label>
+            <button class="btn btn-primary" id="photo-save-btn" onclick="submitProfilePhoto()" disabled>حفظ</button>
+            <button class="btn btn-secondary" onclick="closePhotoModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار نوع المنشور -->
+    <div class="modal-overlay" id="post-type-modal">
+        <div class="modal-box">
+            <h3>إنشاء منشور جديد</h3>
+            <div class="post-type-choice">
+                <button class="post-type-btn" onclick="choosePostType('image')">
+                    <span class="material-icons">photo_camera</span> نشر صورة
+                </button>
+                <button class="post-type-btn" onclick="choosePostType('video')">
+                    <span class="material-icons">videocam</span> نشر فيديو
+                </button>
+                <button class="post-type-btn" onclick="choosePostType('text')">
+                    <span class="material-icons">notes</span> نشر نص
+                </button>
+            </div>
+            <button class="btn btn-secondary" onclick="closePostTypeModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد عامة (تُستخدم لتأكيد حذف رسالة أو منشور) -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-box">
+            <h3>تأكيد الحذف</h3>
+            <p id="confirm-modal-text" style="color:var(--text-color); margin-bottom:20px; line-height:1.5; font-size:15px;"></p>
+            <button class="btn" style="background:var(--badge-red); color:#fff;" onclick="runConfirmModalAction()">حذف</button>
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل منشور -->
+    <div class="modal-overlay" id="edit-post-modal">
+        <div class="modal-box">
+            <h3>تعديل المنشور</h3>
+            <div class="input-group"><textarea id="edit-post-caption-input" placeholder="اكتب وصفًا..."></textarea></div>
+            <button class="btn btn-primary" onclick="submitEditPost()">حفظ التعديل</button>
+            <button class="btn btn-secondary" onclick="closeEditPostModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تشخيص مشكلة الميكروفون: تظهر تفاصيل الخطأ الكاملة + زر نسخ لإرسالها لدعم AppCreator24 -->
+    <div class="modal-overlay" id="mic-diag-modal">
+        <div class="modal-box">
+            <h3>تعذر الوصول إلى الميكروفون</h3>
+            <p id="mic-diag-summary" style="color:var(--text-color); margin-bottom:12px; line-height:1.6; font-size:15px;"></p>
+            <div id="mic-diag-details" style="background:var(--light-gray); border-radius:10px; padding:12px; font-size:12px; direction:ltr; text-align:left; color:var(--muted-text); max-height:160px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; margin-bottom:16px;"></div>
+            <button class="btn btn-primary" onclick="copyMicDiagDetails()">نسخ التفاصيل لإرسالها للدعم الفني</button>
+            <button class="btn btn-secondary" onclick="closeMicDiagModal()">إغلاق</button>
+        </div>
+    </div>
+
+<div class="page active" id="page-splash">
+    <div class="auth-container">
+        <div class="material-icons app-logo">forum</div>
+        <div class="app-title">Messenger</div>
+        <button class="btn btn-primary" onclick="navigateTo('page-login')">تسجيل الدخول</button>
+        <button class="btn btn-secondary" onclick="navigateTo('page-register')" style="margin-top: 12px;">إنشاء حساب جديد</button>
+    </div>
+</div>
+
+<div class="page" id="page-register">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="navigateTo('page-splash')">arrow_forward</button>
+        <h1>حساب جديد</h1>
+        <div></div>
+    </div>
+    <div class="auth-container" style="justify-content: flex-start; padding-top: 40px;">
+        <div class="input-group"><input type="text" id="reg-username" placeholder="اسم المستخدم (Nom de profil)"></div>
+        <div class="input-group"><input type="email" id="reg-gmail" placeholder="البريد الإلكتروني (Gmail)"></div>
+        <div class="input-group"><input type="password" id="reg-password" placeholder="كلمة المرور"></div>
+        <button class="btn btn-primary" onclick="handleRegister()">إنشاء الحساب</button>
+        <div class="auth-switch" onclick="navigateTo('page-login')">لديك حساب بالفعل؟ سجل دخولك</div>
+    </div>
+</div>
+
+<div class="page" id="page-login">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="navigateTo('page-splash')">arrow_forward</button>
+        <h1>تسجيل الدخول</h1>
+        <div></div>
+    </div>
+    <div class="auth-container" style="justify-content: flex-start; padding-top: 40px;">
+        <div class="input-group"><input type="email" id="login-gmail" placeholder="البريد الإلكتروني (Gmail)"></div>
+        <div class="input-group"><input type="password" id="login-password" placeholder="كلمة المرور"></div>
+        <button class="btn btn-primary" onclick="handleLogin()">دخول</button>
+        <div class="auth-switch" onclick="navigateTo('page-register')">ليس لديك حساب؟ أنشئ حسابًا الآن</div>
+    </div>
+</div>
+
+<!-- الصفحة الرئيسية بعد الدخول: المحادثات الأخيرة فقط -->
+<div class="page" id="page-home">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="handleLogout()">logout</button>
+        <div class="header-title-wrap">
+            <img id="my-avatar" class="header-avatar" src="" alt="">
+            <h1 id="home-title">المحادثات</h1>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn material-icons" onclick="openSearchPage()" title="بحث عن أصدقاء">search</button>
+            <button class="icon-btn material-icons" onclick="openPhotoModal()" title="تعديل الصورة">add_a_photo</button>
+            <button class="icon-btn material-icons" onclick="openUsernameModal()" title="تبديل الاسم">edit</button>
+        </div>
+    </div>
+    <div class="scroll-body">
+        <div class="section-label">المحادثات الأخيرة</div>
+        <div class="list-container" id="conversations-list"></div>
+    </div>
+    <!-- زر فتح قسم المنشورات -->
+    <button class="fab material-icons" onclick="openPostsPage()" title="المنشورات">dynamic_feed</button>
+</div>
+
+<!-- صفحة البحث عن مستخدمين/أصدقاء -->
+<div class="page" id="page-search">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="navigateTo('page-home')">arrow_forward</button>
+        <h1>بحث عن أصدقاء</h1>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="search-container">
+        <div class="search-box">
+            <span class="material-icons" style="color: var(--muted-text)">search</span>
+            <input type="text" id="search-input" placeholder="ابحث عن مستخدمين أو أصدقاء..." oninput="handleSearchInput()">
+        </div>
+    </div>
+    <div class="scroll-body">
+        <div class="section-label" id="search-section-label">اقتراحات</div>
+        <div class="list-container" id="search-results"></div>
+    </div>
+</div>
+
+<div class="page" id="page-chat">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="closeChat()">arrow_forward</button>
+        <div class="header-title-wrap">
+            <img id="chat-target-avatar" class="header-avatar" src="" alt="">
+            <h1 id="chat-target-name">اسم المستقبل</h1>
+        </div>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="chat-messages" id="chat-messages-container"></div>
+
+    <!-- شريط الإدخال العادي (نص + زر إرسال + زر ميكروفون) -->
+    <div class="chat-input-bar" id="chat-input-bar">
+        <input type="text" id="chat-input-field" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter'){handleSendMessage();}">
+        <button class="icon-btn material-icons" onclick="handleSendMessage()" title="إرسال">send</button>
+        <button class="icon-btn material-icons" onclick="startVoiceRecording()" title="تسجيل رسالة صوتية">mic</button>
+    </div>
+
+    <!-- شريط التسجيل الصوتي: يظهر أثناء التسجيل فقط -->
+    <div class="voice-recording-bar" id="voice-recording-bar">
+        <button class="icon-btn material-icons" style="color:var(--badge-red);" onclick="cancelVoiceRecording()" title="إلغاء">delete</button>
+        <div class="recording-indicator">
+            <span class="rec-dot"></span>
+            <span id="recording-timer">00:00</span>
+        </div>
+        <button class="icon-btn material-icons" onclick="stopVoiceRecording()" title="إيقاف التسجيل">stop_circle</button>
+    </div>
+
+    <!-- شريط معاينة التسجيل: استماع / حذف / إرسال -->
+    <div class="voice-preview-bar" id="voice-preview-bar">
+        <button class="icon-btn material-icons" style="color:var(--badge-red);" onclick="deleteVoicePreview()" title="حذف">delete</button>
+        <button class="icon-btn material-icons" id="voice-preview-play-btn" onclick="toggleVoicePreviewPlay()" title="استماع">play_arrow</button>
+        <div class="voice-preview-duration" id="voice-preview-duration">00:00</div>
+        <button class="icon-btn material-icons" style="color:var(--primary-color);" onclick="sendVoiceMessage()" title="إرسال">send</button>
+    </div>
+</div>
+
+<!-- صفحة المنشورات -->
+<div class="page" id="page-posts">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="navigateTo('page-home')">arrow_forward</button>
+        <h1>المنشورات</h1>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="scroll-body" id="posts-scroll-body">
+        <div class="list-container" id="posts-list" style="padding:0;"></div>
+        <button class="load-more-btn" id="load-more-btn" style="display:none" onclick="loadPosts(false)">تحميل المزيد</button>
+    </div>
+    <!-- زر إنشاء منشور -->
+    <button class="fab material-icons" onclick="openPostTypeModal()" title="منشور جديد">add</button>
+</div>
+
+<!-- صفحة إنشاء منشور -->
+<div class="page" id="page-create-post">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="cancelCreatePost()">arrow_forward</button>
+        <h1 id="create-post-title">منشور جديد</h1>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="scroll-body">
+        <div class="auth-container" style="justify-content:flex-start; padding-top:24px; align-items:stretch;">
+
+            <img class="media-preview" id="media-preview-img" style="display:none" src="">
+            <video class="media-preview" id="media-preview-video" style="display:none" controls></video>
+
+            <label class="file-picker-btn" id="image-picker-label" style="display:none">
+                <span class="material-icons">photo_camera</span>
+                اختيار صورة من الهاتف
+                <input type="file" accept="image/*" id="image-file-input" style="display:none" onchange="handleMediaSelect(event,'image')">
+            </label>
+
+            <label class="file-picker-btn" id="video-picker-label" style="display:none">
+                <span class="material-icons">videocam</span>
+                اختيار فيديو من الهاتف
+                <input type="file" accept="video/*" id="video-file-input" style="display:none" onchange="handleMediaSelect(event,'video')">
+            </label>
+
+            <div class="input-group">
+                <textarea id="post-caption-input" placeholder="اكتب وصفًا للمنشور..."></textarea>
+            </div>
+
+            <button class="btn btn-primary" id="submit-post-btn" onclick="submitPost()">نشر</button>
+        </div>
+    </div>
+</div>
+
+<!-- صفحة تعليقات منشور -->
+<div class="page" id="page-post-comments">
+    <div class="header">
+        <button class="icon-btn material-icons" onclick="navigateTo('page-posts')">arrow_forward</button>
+        <h1>التعليقات</h1>
+        <div style="width: 24px;"></div>
+    </div>
+    <div class="scroll-body" id="comments-list"></div>
+    <div class="chat-input-bar">
+        <input type="text" id="comment-input-field" placeholder="اكتب تعليقًا..." onkeypress="if(event.key==='Enter'){handleAddComment();}">
+        <button class="icon-btn material-icons" onclick="handleAddComment()">send</button>
+    </div>
+</div>
+
+</div>
+<script>
+    // ============ الإعدادات العامة والمتغيرات ============
+    const API_URL = "https://script.google.com/macros/s/AKfycbyR3C5uulEEmhcccBF0UXqvhhmjkKoCoHdn2b2LddLhip7IVWM9LnAwEurC8eo0AYd9pw/exec";
+
+    let currentUser = localStorage.getItem("username") || "";
+    let currentGmail = localStorage.getItem("gmail") || "";
+    let currentPhotoUrl = localStorage.getItem("photourl") || "";
+    let activeChatPartner = "";
+    let activeChatPartnerPhoto = "";
+    let chatInterval = null;
+    let chatAvatarInterval = null;
+    let homeInterval = null;
+    let searchDebounce = null;
+    let lastMessageCount = 0;
+
+    // ---- حالة المنشورات ----
+    const POSTS_PAGE_SIZE = 8;
+    let postsOffset = 0;
+    let postsHasMore = true;
+    let postsLoading = false;
+
+    let selectedPostType = "";
+    let selectedMediaBase64 = null;
+    let selectedMediaMime = null;
+
+    let activeCommentsPostId = "";
+
+    let selectedProfilePhotoBase64 = null;
+    let selectedProfilePhotoMime = null;
+
+    // دالة لحفظ آخر وقت قراءة لمحادثة معينة
+    function saveLastReadTime(partner) {
+        const readTimesKey = `${currentUser}_read_times`;
+        let readTimes = JSON.parse(localStorage.getItem(readTimesKey) || "{}");
+        readTimes[partner] = new Date().getTime();
+        localStorage.setItem(readTimesKey, JSON.stringify(readTimes));
+    }
+
+    // دالة للحصول على آخر وقت قراءة لمحادثة معينة
+    function getLastReadTime(partner) {
+        const readTimesKey = `${currentUser}_read_times`;
+        let readTimes = JSON.parse(localStorage.getItem(readTimesKey) || "{}");
+        return readTimes[partner] || 0;
+    }
+
+    // دالة لحساب عدد الرسائل غير المقروءة من شخص معين
+    function countUnreadMessages(partner, allMessages) {
+        const lastReadTime = getLastReadTime(partner);
+        return allMessages.filter(msg => {
+            return msg.sender === partner && new Date(msg.time).getTime() > lastReadTime;
+        }).length;
+    }
+
+    // تحديث دائرة صورة البروفايل الخاصة بي في الهيدر
+    function updateMyAvatarDisplay() {
+        const img = document.getElementById('my-avatar');
+        if (!img) return;
+        if (currentPhotoUrl) {
+            img.src = currentPhotoUrl;
+            img.style.display = 'inline-block';
+        } else {
+            img.style.display = 'none';
+            img.removeAttribute('src');
+        }
+    }
+
+    // تشغيل تلقائي عند فتح التطبيق للتحقق من الجلسة
+    window.onload = function() {
+        if(localStorage.getItem("isLoggedIn") === "true") {
+            document.getElementById('home-title').innerText = currentUser;
+            updateMyAvatarDisplay();
+            navigateTo('page-home');
+        }
+    };
+
+    // التنقل بين الصفحات والتحكم في الواجهة
+    function navigateTo(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(pageId);
+        if (!target) {
+            console.error('navigateTo: page not found ->', pageId);
+            return;
+        }
+        target.classList.add('active');
+
+        if (pageId !== 'page-chat' && chatInterval) {
+            clearInterval(chatInterval);
+            chatInterval = null;
+        }
+
+        if (pageId !== 'page-chat' && chatAvatarInterval) {
+            clearInterval(chatAvatarInterval);
+            chatAvatarInterval = null;
+        }
+
+        if (pageId !== 'page-home' && homeInterval) {
+            clearInterval(homeInterval);
+            homeInterval = null;
+        }
+
+        if (pageId === 'page-home') {
+            loadConversations();
+            if (homeInterval) clearInterval(homeInterval);
+            homeInterval = setInterval(() => {
+                loadConversations();
+            }, 4000);
+        }
+
+        if (pageId === 'page-posts') {
+            // في حال تم تغيير الصورة أثناء وجودنا خارج صفحة المنشورات
+            // نتأكد أن أول تحميل يعكس آخر البيانات
+        }
+
+        // إغلاق أي قائمة سياقية مفتوحة عند تغيير الصفحة
+        closeAllContextMenus();
+    }
+
+    function openSearchPage() {
+        document.getElementById('search-input').value = "";
+        navigateTo('page-search');
+        loadRandomUsers();
+    }
+
+    function showLoader(show) {
+        document.getElementById('loader').style.display = show ? 'flex' : 'none';
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // ضغط/تصغير الصورة قبل الإرسال لتقليل حجم البيانات (يمنع تعليق الطلب)
+    function resizeImageFile(file, maxDim = 1280, quality = 0.8) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round(height * (maxDim / width));
+                            width = maxDim;
+                        } else {
+                            width = Math.round(width * (maxDim / height));
+                            height = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve({
+                        base64: dataUrl.split(',')[1],
+                        mimeType: 'image/jpeg',
+                        dataUrl: dataUrl
+                    });
+                };
+                img.onerror = () => reject(new Error('تعذرت قراءة الصورة'));
+                img.src = e.target.result;
+            };
+            reader.onerror = () => reject(new Error('تعذرت قراءة الملف'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // إرسال طلبات الـ API مع مهلة زمنية قصوى حتى لا تدور الدائرة إلى الأبد
+    async function makeRequest(data, showFullLoader = true, timeoutMs = 30000) {
+        if (showFullLoader) showLoader(true);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(data),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            const rawText = await response.text();
+            let resData;
+            try {
+                resData = JSON.parse(rawText);
+            } catch (parseErr) {
+                if (showFullLoader) showLoader(false);
+                console.error("Invalid JSON from server (first 300 chars):", rawText.slice(0, 300));
+                showToast("الخادم أرجع استجابة غير صالحة. تأكد من نشر Apps Script بصلاحية 'تنفيذ باسمي' و 'الوصول: أي شخص'");
+                return null;
+            }
+
+            if (showFullLoader) showLoader(false);
+            return resData;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (showFullLoader) showLoader(false);
+            if (error.name === 'AbortError') {
+                showToast("استغرق الطلب وقتًا طويلاً جدًا. تحقق من اتصالك أو جرّب ملفًا أصغر");
+            } else {
+                showToast("حدث خطأ في الاتصال بالخادم!");
+            }
+            console.error(error);
+            return null;
+        }
+    }
+
+    // وظيفة إنشاء حساب جديد
+    async function handleRegister() {
+        const username = document.getElementById('reg-username').value.trim();
+        const gmail = document.getElementById('reg-gmail').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+
+        if(!username || !gmail || !password) {
+            showToast("الرجاء ملء جميع الحقول");
+            return;
+        }
+
+        const response = await makeRequest({
+            action: "register",
+            username: username,
+            gmail: gmail,
+            password: password
+        });
+
+        if(response) {
+            if(response.status === "success") {
+                showToast("تم إنشاء الحساب بنجاح!");
+                navigateTo('page-login');
+            } else if(response.status === "exists") {
+                showToast("This Gmail already exists.");
+            } else {
+                showToast("حدث خطأ غير متوقع.");
+            }
+        }
+    }
+
+    // وظيفة تسجيل الدخول
+    async function handleLogin() {
+        const gmail = document.getElementById('login-gmail').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        if(!gmail || !password) {
+            showToast("الرجاء إدخال البريد وكلمة المرور");
+            return;
+        }
+
+        const response = await makeRequest({
+            action: "login",
+            gmail: gmail,
+            password: password
+        });
+
+        if(response) {
+            if(response.status === "success") {
+                currentUser = response.username;
+                currentGmail = gmail;
+                currentPhotoUrl = response.photoUrl || "";
+
+                localStorage.setItem("username", currentUser);
+                localStorage.setItem("gmail", currentGmail);
+                localStorage.setItem("photourl", currentPhotoUrl);
+                localStorage.setItem("isLoggedIn", "true");
+
+                document.getElementById('home-title').innerText = currentUser;
+                updateMyAvatarDisplay();
+                showToast("مرحباً " + currentUser);
+                navigateTo('page-home');
+            } else if(response.status === "error") {
+                showToast("بيانات الاعتماد غير صحيحة.");
+            }
+        }
+    }
+
+    // تسجيل الخروج
+    function handleLogout() {
+        const readTimesKey = `${currentUser}_read_times`;
+        const readTimes = localStorage.getItem(readTimesKey);
+        localStorage.clear();
+        if (readTimes) {
+            localStorage.setItem(readTimesKey, readTimes);
+        }
+        currentUser = "";
+        currentGmail = "";
+        currentPhotoUrl = "";
+        updateMyAvatarDisplay();
+        if (chatInterval) { clearInterval(chatInterval); chatInterval = null; }
+        if (chatAvatarInterval) { clearInterval(chatAvatarInterval); chatAvatarInterval = null; }
+        if (homeInterval) { clearInterval(homeInterval); homeInterval = null; }
+        navigateTo('page-splash');
+    }
+
+    // ---- تبديل اسم المستخدم ----
+    function openUsernameModal() {
+        document.getElementById('new-username-input').value = currentUser;
+        document.getElementById('username-modal').classList.add('active');
+    }
+
+    function closeUsernameModal() {
+        document.getElementById('username-modal').classList.remove('active');
+    }
+
+    async function submitUsernameChange() {
+        const newUsername = document.getElementById('new-username-input').value.trim();
+
+        if (!newUsername) {
+            showToast("الرجاء إدخال اسم صالح");
+            return;
+        }
+        if (newUsername === currentUser) {
+            closeUsernameModal();
+            return;
+        }
+
+        const response = await makeRequest({
+            action: "update_username",
+            gmail: currentGmail,
+            new_username: newUsername
+        });
+
+        if (response) {
+            if (response.status === "success") {
+                currentUser = response.username;
+                localStorage.setItem("username", currentUser);
+                document.getElementById('home-title').innerText = currentUser;
+                showToast("تم تبديل الاسم بنجاح");
+                closeUsernameModal();
+                loadConversations();
+            } else if (response.status === "taken") {
+                showToast("هذا الاسم مستخدم بالفعل");
+            } else {
+                showToast("تعذر تبديل الاسم");
+            }
+        }
+    }
+
+    // ---- تعديل صورة البروفايل ----
+    function openPhotoModal() {
+        const preview = document.getElementById('photo-preview-img');
+        preview.src = currentPhotoUrl || "";
+        preview.style.background = "var(--light-gray)";
+        selectedProfilePhotoBase64 = null;
+        selectedProfilePhotoMime = null;
+        document.getElementById('photo-save-btn').disabled = true;
+        document.getElementById('photo-file-input').value = "";
+        document.getElementById('photo-modal').classList.add('active');
+    }
+
+    function closePhotoModal() {
+        document.getElementById('photo-modal').classList.remove('active');
+    }
+
+    async function handlePhotoFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            showLoader(true);
+            const { base64, mimeType, dataUrl } = await resizeImageFile(file, 800, 0.8);
+            selectedProfilePhotoBase64 = base64;
+            selectedProfilePhotoMime = mimeType;
+            document.getElementById('photo-preview-img').src = dataUrl;
+            document.getElementById('photo-save-btn').disabled = false;
+        } catch (err) {
+            showToast("تعذرت معالجة الصورة، جرّب صورة أخرى");
+            console.error(err);
+        } finally {
+            showLoader(false);
+        }
+    }
+
+    async function submitProfilePhoto() {
+        if (!selectedProfilePhotoBase64) {
+            showToast("الرجاء اختيار صورة");
+            return;
+        }
+
+        const response = await makeRequest({
+            action: "update_profile_photo",
+            gmail: currentGmail,
+            photoBase64: selectedProfilePhotoBase64,
+            mimeType: selectedProfilePhotoMime
+        });
+
+        if (response && response.status === "success") {
+            currentPhotoUrl = response.photoUrl;
+            localStorage.setItem("photourl", currentPhotoUrl);
+            updateMyAvatarDisplay();
+            showToast("تم تحديث صورة البروفايل");
+            closePhotoModal();
+
+            // تحديث فوري لقائمة المحادثات كي تظهر الصورة الجديدة بدون انتظار الدورة التالية
+            loadConversations();
+
+            // إذا كانت صفحة المنشورات مفتوحة (أو مخزنة)، أعد تحميلها لتعكس الصورة الجديدة
+            postsOffset = 0;
+            postsHasMore = true;
+            document.getElementById('posts-list').innerHTML = "";
+            if (document.getElementById('page-posts').classList.contains('active')) {
+                loadPosts(true);
+            }
+        } else {
+            const debugMsg = response && response.debug ? (": " + response.debug) : "";
+            showToast("تعذر تحديث الصورة" + debugMsg);
+            console.error("update_profile_photo failed:", response);
+        }
+    }
+
+    // إعادة تشغيل البحث تلقائيًا أثناء الكتابة (مع تأخير بسيط)
+    function handleSearchInput() {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                runSearch(query);
+            } else {
+                loadRandomUsers();
+            }
+        }, 300);
+    }
+
+    async function runSearch(query) {
+        document.getElementById('search-section-label').innerText = "نتائج البحث";
+
+        const response = await makeRequest({
+            action: "search",
+            query: query
+        }, false);
+
+        renderUserList(response && response.users ? response.users : []);
+    }
+
+    async function loadRandomUsers() {
+        document.getElementById('search-section-label').innerText = "اقتراحات";
+
+        const response = await makeRequest({
+            action: "get_random_users",
+            username: currentUser,
+            limit: 10
+        }, false);
+
+        renderUserList(response && response.users ? response.users : []);
+    }
+
+    function renderUserList(users) {
+        const container = document.getElementById('search-results');
+        container.innerHTML = "";
+
+        const filtered = users.filter(u => u.username !== currentUser);
+
+        if (filtered.length) {
+            filtered.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.onclick = () => openChat(user.username, user.photoUrl || "");
+                item.innerHTML = `
+                    <div class="avatar-wrap">
+                        ${avatarHtml(user.photoUrl, 'avatar')}
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">${escapeHtml(user.username)}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        } else {
+            container.innerHTML = "<p style='text-align:center; padding:16px; color:var(--muted-text);'>لا يوجد مستخدمون لعرضهم</p>";
+        }
+    }
+
+    // إرجاع HTML لصورة أفتار (صورة حقيقية أو أيقونة افتراضية) - بدون استخدام onerror inline (يتم ضبطه عبر JS)
+    function avatarHtml(photoUrl, className) {
+        if (photoUrl) {
+            return `<img class="${className}" src="${escapeHtml(photoUrl)}" data-fallback-class="${className}">`;
+        }
+        return `<div class="${className} material-icons">person</div>`;
+    }
+
+    // معالج مركزي لأخطاء تحميل الصور (يستبدل onerror inline الذي كان يسبب مشاكل ترميز)
+    document.addEventListener('error', function(e) {
+        const el = e.target;
+        if (el.tagName === 'IMG' && el.hasAttribute('data-fallback-class')) {
+            const cls = el.getAttribute('data-fallback-class');
+            const div = document.createElement('div');
+            div.className = cls + ' material-icons';
+            div.textContent = 'person';
+            el.replaceWith(div);
+        }
+    }, true);
+
+    // إضافة: تحديث صورة الطرف الآخر داخل صفحة الشات تلقائيًا إن غيّر صورته
+    async function refreshChatPartnerAvatar() {
+        if (!activeChatPartner) return;
+
+        const response = await makeRequest({
+            action: "get_user_info",
+            username: activeChatPartner
+        }, false);
+
+        if (response && response.status === "success") {
+            const newPhoto = response.photoUrl || "";
+            if (newPhoto !== activeChatPartnerPhoto) {
+                activeChatPartnerPhoto = newPhoto;
+                const chatAvatarImg = document.getElementById('chat-target-avatar');
+                if (activeChatPartnerPhoto) {
+                    chatAvatarImg.src = activeChatPartnerPhoto;
+                    chatAvatarImg.style.display = 'inline-block';
+                } else {
+                    chatAvatarImg.style.display = 'none';
+                    chatAvatarImg.removeAttribute('src');
+                }
+            }
+        }
+    }
+
+    // صفحة المحادثة وإرسال واستقبال الرسائل
+    async function openChat(partnerName, partnerPhoto) {
+        activeChatPartner = partnerName;
+        activeChatPartnerPhoto = partnerPhoto || "";
+
+        document.getElementById('chat-target-name').innerText = partnerName;
+
+        const chatAvatarImg = document.getElementById('chat-target-avatar');
+        if (activeChatPartnerPhoto) {
+            chatAvatarImg.src = activeChatPartnerPhoto;
+            chatAvatarImg.style.display = 'inline-block';
+        } else {
+            chatAvatarImg.style.display = 'none';
+            chatAvatarImg.removeAttribute('src');
+        }
+
+        document.getElementById('chat-messages-container').innerHTML = "";
+        lastMessageCount = 0;
+
+        // التأكد من أن شريط الإدخال العادي هو الظاهر (وليس شريط تسجيل متبقٍ من محادثة سابقة)
+        resetVoiceUiState();
+
+        navigateTo('page-chat');
+
+        saveLastReadTime(partnerName);
+        loadMessages(false);
+
+        if (chatInterval) clearInterval(chatInterval);
+        chatInterval = setInterval(() => {
+            loadMessages(true);
+        }, 2000);
+
+        if (chatAvatarInterval) clearInterval(chatAvatarInterval);
+        chatAvatarInterval = setInterval(() => {
+            refreshChatPartnerAvatar();
+        }, 8000);
+    }
+
+    function closeChat() {
+        activeChatPartner = "";
+        activeChatPartnerPhoto = "";
+        if (chatAvatarInterval) { clearInterval(chatAvatarInterval); chatAvatarInterval = null; }
+        // إلغاء أي تسجيل صوتي جارٍ عند مغادرة المحادثة
+        cancelVoiceRecording();
+        navigateTo('page-home');
+    }
+
+    // ============ تحميل الرسائل (نصية + صوتية معًا) ============
+    async function loadMessages(isBackground = false) {
+        if (!activeChatPartner) return;
+
+        const response = await makeRequest({
+            action: "get_conversation_messages",
+            sender: currentUser,
+            receiver: activeChatPartner
+        }, !isBackground);
+
+        if (!response) return;
+
+        let combined = [];
+
+        if (Array.isArray(response.messages)) {
+            response.messages.forEach(m => combined.push({
+                kind: 'text',
+                id: m.id || '',
+                sender: m.sender,
+                receiver: m.receiver,
+                message: m.message,
+                time: m.time
+            }));
+        }
+
+        if (Array.isArray(response.audioMessages)) {
+            response.audioMessages.forEach(a => combined.push({
+                kind: 'audio',
+                id: a.audioId,
+                sender: a.senderId,
+                receiver: a.receiverId,
+                audioUrl: a.audioUrl,
+                duration: a.duration,
+                time: a.timestamp
+            }));
+        }
+
+        const totalCount = combined.length;
+        if (totalCount === lastMessageCount) return;
+        lastMessageCount = totalCount;
+
+        combined.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+        const container = document.getElementById('chat-messages-container');
+        container.innerHTML = "";
+
+        combined.forEach(item => {
+            const isSent = item.sender === currentUser;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'msg-wrapper ' + (isSent ? 'sent' : 'received');
+            wrapper.dataset.msgId = item.id;
+            wrapper.dataset.isAudio = item.kind === 'audio' ? 'true' : 'false';
+            wrapper.dataset.sender = item.sender;
+
+            if (item.kind === 'text') {
+                wrapper.innerHTML = `<div class="msg-bubble">${escapeHtml(item.message)}</div>`;
+            } else {
+                wrapper.innerHTML = `
+                    <div class="msg-bubble audio-msg-bubble">
+                        <button class="audio-play-btn material-icons" onclick="toggleAudioMessagePlay(this)">play_arrow</button>
+                        <div class="audio-progress-track"><div class="audio-progress-fill"></div></div>
+                        <span class="audio-duration">${formatDuration(item.duration || 0)}</span>
+                        <audio class="hidden-audio-el" src="${escapeHtml(item.audioUrl)}" preload="none"></audio>
+                    </div>`;
+            }
+
+            attachLongPress(wrapper, item);
+            container.appendChild(wrapper);
+        });
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function handleSendMessage() {
+        const field = document.getElementById('chat-input-field');
+        const text = field.value.trim();
+        if (!text || !activeChatPartner) return;
+
+        field.value = "";
+
+        const response = await makeRequest({
+            action: "send",
+            sender: currentUser,
+            receiver: activeChatPartner,
+            message: text
+        }, false);
+
+        if (response && response.status === "sent") {
+            lastMessageCount = -1; // إجبار إعادة الرسم لضمان ظهور الرسالة فورًا
+            loadMessages(true);
+        } else {
+            showToast("تعذر إرسال الرسالة");
+        }
+    }
+
+    // ================= الرسائل الصوتية (Voice Messages) =================
+    let mediaRecorder = null;
+    let mediaRecorderStream = null;
+    let audioChunks = [];
+    let recordingStartTime = 0;
+    let recordingTimerInterval = null;
+    let recordedAudioBlob = null;
+    let recordedAudioDuration = 0;
+    let voicePreviewAudioEl = null;
+
+    function formatDuration(totalSeconds) {
+        const sec = Math.max(0, Math.floor(totalSeconds || 0));
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    // إعادة كل عناصر واجهة التسجيل/المعاينة إلى حالتها الافتراضية (يُستخدم عند فتح/إغلاق المحادثة)
+    function resetVoiceUiState() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.onstop = null;
+            try { mediaRecorder.stop(); } catch (e) {}
+        }
+        if (mediaRecorderStream) {
+            mediaRecorderStream.getTracks().forEach(t => t.stop());
+            mediaRecorderStream = null;
+        }
+        if (recordingTimerInterval) clearInterval(recordingTimerInterval);
+        if (voicePreviewAudioEl) { voicePreviewAudioEl.pause(); voicePreviewAudioEl = null; }
+
+        recordedAudioBlob = null;
+        document.getElementById('voice-recording-bar').style.display = 'none';
+        document.getElementById('voice-preview-bar').style.display = 'none';
+        document.getElementById('chat-input-bar').style.display = 'flex';
+    }
+
+    // ---- اختيار أول صيغة تسجيل مدعومة فعليًا في هذا المتصفح/WebView ----
+    // هذا يمنع فشل "new MediaRecorder(stream)" بصمت في بعض بيئات Android WebView
+    // التي لا تدعم الصيغة الافتراضية (audio/webm) دون تحديد صريح.
+    function getSupportedAudioMimeType() {
+        const candidates = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/mp4',
+            'audio/aac',
+            'audio/ogg;codecs=opus',
+            'audio/3gpp'
+        ];
+        if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) {
+            return null; // سنترك المتصفح يختار الافتراضي إن كانت isTypeSupported غير متوفرة أصلاً
+        }
+        for (const type of candidates) {
+            if (MediaRecorder.isTypeSupported(type)) return type;
+        }
+        return null;
+    }
+
+    // ---- فحص حالة صلاحية الميكروفون قبل المحاولة (إن كانت Permissions API مدعومة) ----
+    // بعض بيئات WebView تدعم Permissions API جزئيًا فقط، لذا هذا فحص إضافي غير حاسم
+    // ولا نمنع المحاولة إذا فشل أو لم يكن مدعومًا - فقط نضيفه للمعلومات التشخيصية.
+    async function queryMicPermissionState() {
+        try {
+            if (navigator.permissions && navigator.permissions.query) {
+                const status = await navigator.permissions.query({ name: 'microphone' });
+                return status.state; // 'granted' | 'denied' | 'prompt'
+            }
+        } catch (e) {
+            return 'unsupported (' + e.message + ')';
+        }
+        return 'unsupported (Permissions API not available)';
+    }
+
+    async function startVoiceRecording() {
+        // ===== فحص 1: هل الصفحة تعمل ضمن سياق آمن (HTTPS)؟ =====
+        // getUserMedia يُرفض دائمًا (بصمت أحيانًا) خارج localhost/HTTPS.
+        if (window.isSecureContext === false) {
+            openMicDiagModal(
+                "يجب فتح التطبيق عبر HTTPS لاستخدام الميكروفون.",
+                "isSecureContext: false\nlocation: " + window.location.href
+            );
+            return;
+        }
+
+        // ===== فحص 2: هل الـ API موجودة أصلاً في هذه البيئة (متصفح/WebView)؟ =====
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            openMicDiagModal(
+                "getUserMedia غير متوفرة في هذه البيئة إطلاقًا. هذا يعني أن مكوّن عرض الصفحة (WebView) داخل التطبيق لا يوفر واجهة الوسائط أصلاً، بغض النظر عن أي صلاحية.",
+                "navigator.mediaDevices: " + (typeof navigator.mediaDevices) +
+                "\nuserAgent: " + navigator.userAgent
+            );
+            return;
+        }
+
+        if (typeof MediaRecorder === 'undefined') {
+            openMicDiagModal(
+                "هذه البيئة لا تدعم تسجيل الصوت (MediaRecorder غير متوفر).",
+                "window.MediaRecorder: undefined\nuserAgent: " + navigator.userAgent
+            );
+            return;
+        }
+
+        const permState = await queryMicPermissionState();
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderStream = stream;
+            audioChunks = [];
+
+            // اختيار صيغة مدعومة فعليًا بدل الاعتماد على الافتراضي فقط
+            const supportedMime = getSupportedAudioMimeType();
+            try {
+                mediaRecorder = supportedMime
+                    ? new MediaRecorder(stream, { mimeType: supportedMime })
+                    : new MediaRecorder(stream);
+            } catch (recorderErr) {
+                // فشل إنشاء MediaRecorder نفسه (نادر) - نوقف المسارات ونعرض رسالة دقيقة
+                stream.getTracks().forEach(t => t.stop());
+                mediaRecorderStream = null;
+                openMicDiagModal(
+                    "تم منح الوصول للميكروفون، لكن تعذر إنشاء مسجل الصوت (MediaRecorder) في هذا الجهاز.",
+                    "MediaRecorder constructor error: " + recorderErr.name + " - " + recorderErr.message +
+                    "\nsupportedMime tried: " + (supportedMime || "(default)") +
+                    "\npermissions.query state: " + permState
+                );
+                return;
+            }
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) audioChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                stream.getTracks().forEach(t => t.stop());
+                recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                recordedAudioDuration = Math.round((Date.now() - recordingStartTime) / 1000);
+                showVoicePreview();
+            };
+
+            mediaRecorder.start();
+            recordingStartTime = Date.now();
+
+            document.getElementById('chat-input-bar').style.display = 'none';
+            document.getElementById('voice-preview-bar').style.display = 'none';
+            document.getElementById('voice-recording-bar').style.display = 'flex';
+            document.getElementById('recording-timer').innerText = "00:00";
+
+            if (recordingTimerInterval) clearInterval(recordingTimerInterval);
+            recordingTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                document.getElementById('recording-timer').innerText = formatDuration(elapsed);
+            }, 500);
+
+        } catch (err) {
+            // ===== رسائل خطأ دقيقة حسب نوع الاستثناء الفعلي، معروضة في نافذة تشخيص كاملة =====
+            // (وليس toast فقط، لأن الـ toast يختفي بسرعة ولا يمكن نسخه لإرساله للدعم الفني)
+            console.error("getUserMedia error:", err.name, err.message, err);
+
+            let summary;
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                summary = "تم رفض إذن الميكروفون من قِبل مكوّن عرض الصفحة (WebView) داخل التطبيق نفسه، وليس من نظام أندرويد. صلاحية النظام التي منحتها من الإعدادات لا تُمرَّر تلقائيًا لهذا المكوّن. هذا يحتاج إعدادًا من داخل منصة بناء التطبيق (AppCreator24) نفسها، ولا يمكن حله من كود الصفحة.";
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                summary = "لم يتم العثور على أي ميكروفون متاح لهذا التطبيق على الجهاز.";
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                summary = "الميكروفون قيد الاستخدام من تطبيق آخر حاليًا، أو هناك مشكلة في الهاردوير.";
+            } else if (err.name === 'SecurityError') {
+                summary = "تعذر الوصول للميكروفون بسبب سياق أمني غير مسموح به (تحقق من أن الصفحة تُحمَّل عبر HTTPS).";
+            } else if (err.name === 'AbortError') {
+                summary = "تم إلغاء طلب الوصول للميكروفون قبل اكتماله.";
+            } else {
+                summary = "تعذر الوصول إلى الميكروفون لسبب غير معروف بدقة.";
+            }
+
+            const details =
+                "error.name: " + err.name +
+                "\nerror.message: " + err.message +
+                "\npermissions.query state: " + permState +
+                "\nisSecureContext: " + window.isSecureContext +
+                "\nlocation: " + window.location.href +
+                "\nuserAgent: " + navigator.userAgent;
+
+            openMicDiagModal(summary, details);
+        }
+    }
+
+    // ---- نافذة تشخيص الميكروفون: تعرض السبب + تفاصيل تقنية قابلة للنسخ لإرسالها لدعم AppCreator24 ----
+    function openMicDiagModal(summary, details) {
+        document.getElementById('mic-diag-summary').innerText = summary;
+        document.getElementById('mic-diag-details').innerText = details;
+        document.getElementById('mic-diag-modal').classList.add('active');
+    }
+
+    function closeMicDiagModal() {
+        document.getElementById('mic-diag-modal').classList.remove('active');
+    }
+
+    function copyMicDiagDetails() {
+        const summary = document.getElementById('mic-diag-summary').innerText;
+        const details = document.getElementById('mic-diag-details').innerText;
+        const fullText = summary + "\n\n" + details;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullText).then(() => {
+                showToast('تم نسخ التفاصيل، الصقها في رسالة للدعم الفني');
+            }).catch(() => {
+                showToast('تعذر النسخ التلقائي، انسخ النص يدويًا من الصندوق');
+            });
+        } else {
+            showToast('النسخ التلقائي غير مدعوم هنا، انسخ النص يدويًا من الصندوق');
+        }
+    }
+
+    function stopVoiceRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        if (recordingTimerInterval) clearInterval(recordingTimerInterval);
+        document.getElementById('voice-recording-bar').style.display = 'none';
+    }
+
+    function cancelVoiceRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.onstop = null; // منع ظهور شاشة المعاينة بعد الإلغاء
+            try { mediaRecorder.stop(); } catch (e) {}
+        }
+        if (mediaRecorderStream) {
+            mediaRecorderStream.getTracks().forEach(t => t.stop());
+            mediaRecorderStream = null;
+        }
+        if (recordingTimerInterval) clearInterval(recordingTimerInterval);
+        recordedAudioBlob = null;
+
+        document.getElementById('voice-recording-bar').style.display = 'none';
+        document.getElementById('voice-preview-bar').style.display = 'none';
+        document.getElementById('chat-input-bar').style.display = 'flex';
+    }
+
+    function showVoicePreview() {
+        document.getElementById('voice-preview-bar').style.display = 'flex';
+        document.getElementById('voice-preview-duration').innerText = formatDuration(recordedAudioDuration);
+        document.getElementById('voice-preview-play-btn').innerText = 'play_arrow';
+        if (voicePreviewAudioEl) { voicePreviewAudioEl.pause(); voicePreviewAudioEl = null; }
+    }
+
+    function deleteVoicePreview() {
+        if (voicePreviewAudioEl) { voicePreviewAudioEl.pause(); voicePreviewAudioEl = null; }
+        recordedAudioBlob = null;
+        document.getElementById('voice-preview-bar').style.display = 'none';
+        document.getElementById('chat-input-bar').style.display = 'flex';
+    }
+
+    function toggleVoicePreviewPlay() {
+        const btn = document.getElementById('voice-preview-play-btn');
+        if (!recordedAudioBlob) return;
+
+        if (!voicePreviewAudioEl) {
+            voicePreviewAudioEl = new Audio(URL.createObjectURL(recordedAudioBlob));
+            voicePreviewAudioEl.onended = () => { btn.innerText = 'play_arrow'; };
+        }
+
+        if (voicePreviewAudioEl.paused) {
+            voicePreviewAudioEl.play();
+            btn.innerText = 'pause';
+        } else {
+            voicePreviewAudioEl.pause();
+            btn.innerText = 'play_arrow';
+        }
+    }
+
+    async function sendVoiceMessage() {
+        if (!recordedAudioBlob || !activeChatPartner) return;
+
+        if (voicePreviewAudioEl) voicePreviewAudioEl.pause();
+
+        const blobToSend = recordedAudioBlob;
+        const durationToSend = recordedAudioDuration;
+
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const base64 = e.target.result.split(',')[1];
+            const mimeType = blobToSend.type || 'audio/webm';
+
+            const response = await makeRequest({
+                action: "send_audio",
+                sender: currentUser,
+                senderGmail: currentGmail,
+                receiver: activeChatPartner,
+                audioBase64: base64,
+                mimeType: mimeType,
+                duration: durationToSend,
+                fileName: "voice_" + Date.now()
+            });
+
+            if (response && response.status === "success") {
+                document.getElementById('voice-preview-bar').style.display = 'none';
+                document.getElementById('chat-input-bar').style.display = 'flex';
+                recordedAudioBlob = null;
+                lastMessageCount = -1;
+                loadMessages(true);
+            } else {
+                const debugMsg = response && response.debug ? (": " + response.debug) : "";
+                showToast("تعذر إرسال الرسالة الصوتية" + debugMsg);
+                console.error("send_audio failed:", response);
+            }
+        };
+        reader.readAsDataURL(blobToSend);
+    }
+
+    // تشغيل/إيقاف رسالة صوتية داخل المحادثة، مع إيقاف أي رسالة صوتية أخرى قيد التشغيل
+    function toggleAudioMessagePlay(btn) {
+        const bubble = btn.closest('.audio-msg-bubble');
+        const audioEl = bubble.querySelector('.hidden-audio-el');
+        const fill = bubble.querySelector('.audio-progress-fill');
+
+        document.querySelectorAll('.hidden-audio-el').forEach(el => {
+            if (el !== audioEl && !el.paused) {
+                el.pause();
+                const otherBubble = el.closest('.audio-msg-bubble');
+                const otherBtn = otherBubble ? otherBubble.querySelector('.audio-play-btn') : null;
+                const otherFill = otherBubble ? otherBubble.querySelector('.audio-progress-fill') : null;
+                if (otherBtn) otherBtn.innerText = 'play_arrow';
+                if (otherFill) otherFill.style.width = '0%';
+            }
+        });
+
+        if (audioEl.paused) {
+            audioEl.play();
+            btn.innerText = 'pause';
+            audioEl.ontimeupdate = () => {
+                if (audioEl.duration) {
+                    fill.style.width = ((audioEl.currentTime / audioEl.duration) * 100) + '%';
+                }
+            };
+            audioEl.onended = () => {
+                btn.innerText = 'play_arrow';
+                fill.style.width = '0%';
+            };
+        } else {
+            audioEl.pause();
+            btn.innerText = 'play_arrow';
+        }
+    }
+
+    // ================= القائمة السياقية (ضغط مطول على الرسائل) =================
+    let longPressTimer = null;
+    const LONG_PRESS_MS = 550;
+    const LONG_PRESS_MOVE_TOLERANCE = 10;
+    let longPressStartX = 0;
+    let longPressStartY = 0;
+
+    // ربط أحداث الضغط المطول بعنصر رسالة معيّن (يعمل على اللمس والماوس معًا)
+    function attachLongPress(el, item) {
+        const start = (e) => {
+            const point = e.touches ? e.touches[0] : e;
+            longPressStartX = point.clientX;
+            longPressStartY = point.clientY;
+            clearTimeout(longPressTimer);
+            longPressTimer = setTimeout(() => {
+                openMessageContextMenu(item, point);
+            }, LONG_PRESS_MS);
+        };
+        const move = (e) => {
+            const point = e.touches ? e.touches[0] : e;
+            const dx = Math.abs(point.clientX - longPressStartX);
+            const dy = Math.abs(point.clientY - longPressStartY);
+            if (dx > LONG_PRESS_MOVE_TOLERANCE || dy > LONG_PRESS_MOVE_TOLERANCE) {
+                clearTimeout(longPressTimer);
+            }
+        };
+        const cancel = () => { clearTimeout(longPressTimer); };
+
+        el.addEventListener('touchstart', start, { passive: true });
+        el.addEventListener('touchmove', move, { passive: true });
+        el.addEventListener('touchend', cancel);
+        el.addEventListener('touchcancel', cancel);
+        el.addEventListener('mousedown', start);
+        el.addEventListener('mousemove', move);
+        el.addEventListener('mouseup', cancel);
+        el.addEventListener('mouseleave', cancel);
+        // منع قائمة المتصفح الافتراضية للنسخ عند الضغط المطول على الجوال
+        el.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    // يفتح قائمة (نسخ/حذف) فقط إذا كانت الرسالة تخص المستخدم الحالي
+    function openMessageContextMenu(item, point) {
+        if (item.sender !== currentUser) return;
+
+        const menu = document.getElementById('message-context-menu');
+        let html = '';
+
+        if (item.kind === 'text') {
+            html += `<button class="context-menu-item" onclick="copyMessageText('${escapeForInlineJs(item.message)}')"><span class="material-icons">content_copy</span> نسخ الرسالة</button>`;
+        }
+
+        html += `<button class="context-menu-item context-menu-danger" onclick="confirmDeleteMessage('${escapeForInlineJs(item.id)}', ${item.kind === 'audio'})"><span class="material-icons">delete</span> حذف الرسالة</button>`;
+
+        menu.innerHTML = html;
+        positionAndShowContextMenu(menu, point.clientX, point.clientY);
+    }
+
+    // يضبط موضع القائمة العائمة بحيث لا تخرج عن حدود الشاشة، ثم يُظهرها
+    function positionAndShowContextMenu(menu, x, y) {
+        menu.style.left = '0px';
+        menu.style.top = '0px';
+        menu.style.display = 'block';
+        document.getElementById('context-menu-catcher').style.display = 'block';
+
+        requestAnimationFrame(() => {
+            const rect = menu.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width - 8;
+            const maxY = window.innerHeight - rect.height - 8;
+            menu.style.left = Math.max(8, Math.min(x, maxX)) + 'px';
+            menu.style.top = Math.max(8, Math.min(y, maxY)) + 'px';
+        });
+    }
+
+    function closeAllContextMenus() {
+        document.getElementById('message-context-menu').style.display = 'none';
+        document.getElementById('context-menu-catcher').style.display = 'none';
+    }
+
+    // تهريب بسيط للنصوص كي يمكن تمريرها بأمان داخل استدعاء onclick المضمّن
+    function escapeForInlineJs(str) {
+        return String(str)
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '');
+    }
+
+    function unescapeFromInlineJs(str) {
+        return String(str)
+            .replace(/\\n/g, '\n')
+            .replace(/\\'/g, "'")
+            .replace(/\\\\/g, '\\');
+    }
+
+    function copyMessageText(escapedText) {
+        closeAllContextMenus();
+        const text = unescapeFromInlineJs(escapedText);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('تم نسخ الرسالة');
+            }).catch(() => {
+                showToast('تعذر نسخ الرسالة');
+            });
+        } else {
+            showToast('النسخ غير مدعوم في هذا المتصفح');
+        }
+    }
+
+    let pendingDeleteMessageId = null;
+    let pendingDeleteIsAudio = false;
+
+    function confirmDeleteMessage(msgId, isAudio) {
+        closeAllContextMenus();
+        pendingDeleteMessageId = msgId;
+        pendingDeleteIsAudio = isAudio;
+        openConfirmModal('هل تريد حذف هذه الرسالة؟ لا يمكن التراجع عن هذا الإجراء.', executeDeleteMessage);
+    }
+
+    async function executeDeleteMessage() {
+        const action = pendingDeleteIsAudio ? "delete_audio_message" : "delete_message";
+        const idKey = pendingDeleteIsAudio ? "audioId" : "messageId";
+
+        const payload = {
+            action: action,
+            requesterUsername: currentUser,
+            requesterGmail: currentGmail
+        };
+        payload[idKey] = pendingDeleteMessageId;
+
+        const response = await makeRequest(payload, false);
+
+        if (response && response.status === "success") {
+            showToast('تم حذف الرسالة');
+            lastMessageCount = -1; // إجبار إعادة تحميل قائمة الرسائل
+            loadMessages(false);
+        } else {
+            const debugMsg = response && response.debug ? (": " + response.debug) : "";
+            showToast('تعذر حذف الرسالة' + debugMsg);
+        }
+    }
+
+    // ================= نافذة التأكيد العامة (تُستخدم لحذف رسالة أو منشور) =================
+    let confirmModalCallback = null;
+
+    function openConfirmModal(message, onConfirm) {
+        document.getElementById('confirm-modal-text').innerText = message;
+        confirmModalCallback = onConfirm;
+        document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirm-modal').classList.remove('active');
+        confirmModalCallback = null;
+    }
+
+    function runConfirmModalAction() {
+        const cb = confirmModalCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    }
+
+    // ---- تهريب HTML آمن (تم إصلاحه: كان يستبدل الرموز بأحرفها الحرفية بدل كيانات HTML) ----
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function loadConversations() {
+        const readTimesKey = `${currentUser}_read_times`;
+        const readTimes = JSON.parse(localStorage.getItem(readTimesKey) || "{}");
+
+        const response = await makeRequest({
+            action: "get_conversations",
+            username: currentUser,
+            readTimes: readTimes
+        }, false);
+
+        const container = document.getElementById('conversations-list');
+
+        if (response && Array.isArray(response.conversations) && response.conversations.length) {
+            container.innerHTML = "";
+            response.conversations.forEach((conv) => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.onclick = () => openChat(conv.partner, conv.photoUrl || "");
+
+                const unread = conv.unread || 0;
+
+                const badgeText = unread > 9 ? "+9" : String(unread);
+                const badgeHtml = unread > 0 ? `<div class="unread-badge">${badgeText}</div>` : "";
+
+                item.innerHTML = `
+                    <div class="avatar-wrap">
+                        ${avatarHtml(conv.photoUrl, 'avatar')}
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">${escapeHtml(conv.partner)}</div>
+                        <div class="item-msg">${escapeHtml(conv.last_message || "")}</div>
+                    </div>
+                    <div class="item-side">
+                        <div class="item-time">${formatTime(conv.time)}</div>
+                        ${badgeHtml}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        } else {
+            container.innerHTML = "<p style='text-align:center; padding:20px; color:var(--muted-text);'>لا توجد محادثات بعد</p>";
+        }
+    }
+
+    function formatTime(t) {
+        if (!t) return "";
+        const d = new Date(t);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ================= قسم المنشورات (Posts) =================
+
+    function openPostsPage() {
+        postsOffset = 0;
+        postsHasMore = true;
+        document.getElementById('posts-list').innerHTML = "";
+        navigateTo('page-posts');
+        loadPosts(true);
+    }
+
+    async function loadPosts(reset) {
+        if (postsLoading) return;
+        postsLoading = true;
+
+        if (reset) {
+            postsOffset = 0;
+            document.getElementById('posts-list').innerHTML = "";
+        }
+
+        const response = await makeRequest({
+            action: "get_posts",
+            gmail: currentGmail,
+            limit: POSTS_PAGE_SIZE,
+            offset: postsOffset
+        }, reset);
+
+        postsLoading = false;
+
+        const container = document.getElementById('posts-list');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+
+        if (response && Array.isArray(response.posts)) {
+            if (postsOffset === 0 && response.posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons">dynamic_feed</span>
+                        لا توجد منشورات بعد. كن أول من ينشر!
+                    </div>`;
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            response.posts.forEach(post => {
+                container.appendChild(buildPostCard(post));
+            });
+
+            postsOffset += response.posts.length;
+            postsHasMore = !!response.hasMore;
+            loadMoreBtn.style.display = postsHasMore ? 'block' : 'none';
+        }
+    }
+
+    function buildPostCard(post) {
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.id = 'post-' + post.postId;
+        card.dataset.userId = post.userId || '';
+        card.dataset.postType = post.type || '';
+
+        let mediaHtml = "";
+        if (post.type === 'image' && post.mediaUrl) {
+            mediaHtml = `<img class="post-media" src="${escapeHtml(post.mediaUrl)}" loading="lazy">`;
+        } else if (post.type === 'video' && post.mediaUrl) {
+            mediaHtml = `<video class="post-media" src="${escapeHtml(post.mediaUrl)}" controls></video>`;
+        } else if (post.type === 'text') {
+            mediaHtml = `<div class="post-text-only">${escapeHtml(post.caption)}</div>`;
+        }
+
+        const captionHtml = (post.type !== 'text' && post.caption)
+            ? `<div class="post-caption">${escapeHtml(post.caption)}</div>`
+            : "";
+
+        // زر النقاط الثلاث (تعديل/حذف) لا يظهر إلا لصاحب المنشور
+        const isOwner = currentGmail && post.userId && (post.userId === currentGmail);
+        const menuBtnHtml = isOwner
+            ? `<button class="post-menu-btn material-icons" onclick="openPostMenu(event, '${post.postId}')" title="خيارات المنشور">more_vert</button>`
+            : "";
+
+        card.innerHTML = `
+            <div class="post-header">
+                <div class="avatar-wrap">
+                    ${avatarHtml(post.userPhoto, 'avatar avatar-sm')}
+                </div>
+                <div class="post-header-info">
+                    <div class="post-username">${escapeHtml(post.username)}</div>
+                    <div class="post-time">${formatTime(post.date)}</div>
+                </div>
+                ${menuBtnHtml}
+            </div>
+            ${captionHtml}
+            ${mediaHtml}
+            <div class="post-actions">
+                <button class="post-action-btn like-btn ${post.likedByMe ? 'liked' : ''}" onclick="toggleLike('${post.postId}', this)">
+                    <span class="material-icons">${post.likedByMe ? 'favorite' : 'favorite_border'}</span>
+                    <span class="like-count">${post.likesCount}</span>
+                </button>
+                <button class="post-action-btn" onclick="openComments('${post.postId}')">
+                    <span class="material-icons">chat_bubble_outline</span>
+                    <span class="comment-count">${post.commentsCount}</span>
+                </button>
+            </div>
+        `;
+
+        return card;
+    }
+
+    async function toggleLike(postId, btnEl) {
+        // تحديث تفاؤلي فوري للواجهة
+        const isLiked = btnEl.classList.contains('liked');
+        const iconEl = btnEl.querySelector('.material-icons');
+        const countEl = btnEl.querySelector('.like-count');
+        let count = parseInt(countEl.innerText, 10) || 0;
+
+        if (isLiked) {
+            btnEl.classList.remove('liked');
+            iconEl.innerText = 'favorite_border';
+            countEl.innerText = Math.max(0, count - 1);
+        } else {
+            btnEl.classList.add('liked');
+            iconEl.innerText = 'favorite';
+            countEl.innerText = count + 1;
+        }
+
+        const response = await makeRequest({
+            action: "toggle_like",
+            postId: postId,
+            gmail: currentGmail
+        }, false);
+
+        if (response && response.status === "success") {
+            countEl.innerText = response.likesCount;
+            if (response.liked) {
+                btnEl.classList.add('liked');
+                iconEl.innerText = 'favorite';
+            } else {
+                btnEl.classList.remove('liked');
+                iconEl.innerText = 'favorite_border';
+            }
+        } else {
+            // تراجع عن التحديث في حال فشل الطلب
+            showToast("تعذر تسجيل الإعجاب");
+            loadPosts(true);
+        }
+    }
+
+    // ---- قائمة النقاط الثلاث لكل منشور (تعديل / حذف) ----
+    function openPostMenu(e, postId) {
+        e.stopPropagation();
+
+        const menu = document.getElementById('message-context-menu'); // إعادة استخدام نفس القائمة السياقية الموحّدة
+        menu.innerHTML = `
+            <button class="context-menu-item" onclick="openEditPostModal('${postId}')"><span class="material-icons">edit</span> تعديل المنشور</button>
+            <button class="context-menu-item context-menu-danger" onclick="confirmDeletePost('${postId}')"><span class="material-icons">delete</span> حذف المنشور</button>
+        `;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        positionAndShowContextMenu(menu, rect.left, rect.bottom + 4);
+    }
+
+    // ---- إنشاء منشور ----
+    function openPostTypeModal() {
+        document.getElementById('post-type-modal').classList.add('active');
+    }
+
+    function closePostTypeModal() {
+        document.getElementById('post-type-modal').classList.remove('active');
+    }
+
+    function choosePostType(type) {
+        selectedPostType = type;
+        selectedMediaBase64 = null;
+        selectedMediaMime = null;
+
+        closePostTypeModal();
+
+        document.getElementById('post-caption-input').value = "";
+        document.getElementById('media-preview-img').style.display = 'none';
+        document.getElementById('media-preview-video').style.display = 'none';
+        document.getElementById('image-picker-label').style.display = 'none';
+        document.getElementById('video-picker-label').style.display = 'none';
+        document.getElementById('image-file-input').value = "";
+        document.getElementById('video-file-input').value = "";
+
+        const captionInput = document.getElementById('post-caption-input');
+
+        if (type === 'image') {
+            document.getElementById('create-post-title').innerText = 'نشر صورة';
+            document.getElementById('image-picker-label').style.display = 'flex';
+            captionInput.placeholder = "اكتب وصفًا للصورة...";
+        } else if (type === 'video') {
+            document.getElementById('create-post-title').innerText = 'نشر فيديو';
+            document.getElementById('video-picker-label').style.display = 'flex';
+            captionInput.placeholder = "اكتب وصفًا للفيديو...";
+        } else {
+            document.getElementById('create-post-title').innerText = 'نشر نص';
+            captionInput.placeholder = "بماذا تفكر؟";
+        }
+
+        navigateTo('page-create-post');
+    }
+
+    function cancelCreatePost() {
+        navigateTo('page-posts');
+    }
+
+    function handleMediaSelect(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const result = e.target.result;
+            selectedMediaBase64 = result.split(',')[1];
+            selectedMediaMime = file.type;
+
+            if (type === 'image') {
+                const img = document.getElementById('media-preview-img');
+                img.src = result;
+                img.style.display = 'block';
+            } else {
+                const vid = document.getElementById('media-preview-video');
+                vid.src = result;
+                vid.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function submitPost() {
+        const caption = document.getElementById('post-caption-input').value.trim();
+
+        if (selectedPostType === 'text' && !caption) {
+            showToast("الرجاء كتابة نص للمنشور");
+            return;
+        }
+        if ((selectedPostType === 'image' || selectedPostType === 'video') && !selectedMediaBase64) {
+            showToast(selectedPostType === 'image' ? "الرجاء اختيار صورة" : "الرجاء اختيار فيديو");
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-post-btn');
+        submitBtn.disabled = true;
+
+        const response = await makeRequest({
+            action: "create_post",
+            gmail: currentGmail,
+            username: currentUser,
+            type: selectedPostType,
+            caption: caption,
+            mediaBase64: selectedMediaBase64,
+            mimeType: selectedMediaMime
+        });
+
+        submitBtn.disabled = false;
+
+        if (response && response.status === "success") {
+            showToast("تم نشر المنشور بنجاح");
+            navigateTo('page-posts');
+
+            // إدراج المنشور الجديد أعلى القائمة مباشرة دون إعادة تحميل كل شيء
+            const container = document.getElementById('posts-list');
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            const card = buildPostCard({
+                postId: response.post.postId,
+                userId: response.post.userId || currentGmail,
+                username: response.post.username,
+                userPhoto: response.post.userPhoto,
+                type: response.post.type,
+                mediaUrl: response.post.mediaUrl,
+                caption: response.post.caption,
+                likesCount: 0,
+                commentsCount: 0,
+                date: response.post.date,
+                likedByMe: false
+            });
+            container.insertBefore(card, container.firstChild);
+            postsOffset += 1;
+        } else {
+            const debugMsg = response && response.debug ? (": " + response.debug) : "";
+            showToast("تعذر نشر المنشور، حاول مجددًا" + debugMsg);
+            console.error("create_post failed:", response);
+        }
+    }
+
+    // ---- تعديل منشور (يعدّل الوصف/النص مباشرة في Google Sheets) ----
+    let editingPostId = null;
+
+    function openEditPostModal(postId) {
+        closeAllContextMenus();
+        editingPostId = postId;
+
+        const card = document.getElementById('post-' + postId);
+        if (!card) return;
+
+        const captionEl = card.querySelector('.post-caption, .post-text-only');
+        document.getElementById('edit-post-caption-input').value = captionEl ? captionEl.innerText : '';
+        document.getElementById('edit-post-modal').classList.add('active');
+    }
+
+    function closeEditPostModal() {
+        document.getElementById('edit-post-modal').classList.remove('active');
+        editingPostId = null;
+    }
+
+    async function submitEditPost() {
+        if (!editingPostId) return;
+
+        const newCaption = document.getElementById('edit-post-caption-input').value.trim();
+
+        const response = await makeRequest({
+            action: "update_post",
+            postId: editingPostId,
+            gmail: currentGmail,
+            caption: newCaption
+        }, false);
+
+        if (response && response.status === "success") {
+            const card = document.getElementById('post-' + editingPostId);
+            if (card) {
+                const captionEl = card.querySelector('.post-caption, .post-text-only');
+                if (captionEl) captionEl.innerText = newCaption;
+            }
+            showToast('تم تحديث المنشور بنجاح');
+            closeEditPostModal();
+        } else {
+            const debugMsg = response && response.debug ? (": " + response.debug) : "";
+            showToast('تعذر تحديث المنشور' + debugMsg);
+        }
+    }
+
+    // ---- حذف منشور ----
+    let pendingDeletePostId = null;
+
+    function confirmDeletePost(postId) {
+        closeAllContextMenus();
+        pendingDeletePostId = postId;
+        openConfirmModal('هل تريد حذف هذا المنشور نهائيًا؟ سيتم حذف الإعجابات والتعليقات المرتبطة به أيضًا.', executeDeletePost);
+    }
+
+    async function executeDeletePost() {
+        if (!pendingDeletePostId) return;
+
+        const response = await makeRequest({
+            action: "delete_post",
+            postId: pendingDeletePostId,
+            gmail: currentGmail
+        }, false);
+
+        if (response && response.status === "success") {
+            const card = document.getElementById('post-' + pendingDeletePostId);
+            if (card) card.remove();
+            showToast('تم حذف المنشور');
+
+            const container = document.getElementById('posts-list');
+            if (!container.children.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons">dynamic_feed</span>
+                        لا توجد منشورات بعد. كن أول من ينشر!
+                    </div>`;
+            }
+        } else {
+            const debugMsg = response && response.debug ? (": " + response.debug) : "";
+            showToast('تعذر حذف المنشور' + debugMsg);
+        }
+    }
+
+    // ---- التعليقات ----
+    async function openComments(postId) {
+        activeCommentsPostId = postId;
+        document.getElementById('comments-list').innerHTML = "";
+        navigateTo('page-post-comments');
+        await loadComments();
+    }
+
+    async function loadComments() {
+        const response = await makeRequest({
+            action: "get_comments",
+            postId: activeCommentsPostId
+        }, false);
+
+        const container = document.getElementById('comments-list');
+        container.innerHTML = "";
+
+        if (response && Array.isArray(response.comments) && response.comments.length) {
+            response.comments.forEach(c => {
+                container.appendChild(buildCommentItem(c));
+            });
+            container.scrollTop = container.scrollHeight;
+        } else {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="material-icons">chat_bubble_outline</span>
+                    لا توجد تعليقات بعد. كن أول من يعلق!
+                </div>`;
+        }
+    }
+
+    function buildCommentItem(c) {
+        const item = document.createElement('div');
+        item.className = 'comment-item';
+        item.innerHTML = `
+            <div class="avatar-wrap" style="margin-left:0;">
+                <div class="avatar avatar-sm material-icons">person</div>
+            </div>
+            <div class="comment-bubble">
+                <div class="comment-username">${escapeHtml(c.username)}</div>
+                <div class="comment-text">${escapeHtml(c.comment)}</div>
+                <div class="comment-time">${formatTime(c.date)}</div>
+            </div>
+        `;
+        return item;
+    }
+
+    async function handleAddComment() {
+        const field = document.getElementById('comment-input-field');
+        const text = field.value.trim();
+        if (!text || !activeCommentsPostId) return;
+
+        field.value = "";
+
+        const response = await makeRequest({
+            action: "add_comment",
+            postId: activeCommentsPostId,
+            gmail: currentGmail,
+            username: currentUser,
+            comment: text
+        }, false);
+
+        if (response && response.status === "success") {
+            const container = document.getElementById('comments-list');
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            container.appendChild(buildCommentItem(response.comment));
+            container.scrollTop = container.scrollHeight;
+
+            // تحديث عدد التعليقات في بطاقة المنشور إن كانت ظاهرة في القائمة
+            const postCard = document.getElementById('post-' + activeCommentsPostId);
+            if (postCard) {
+                const countEl = postCard.querySelector('.comment-count');
+                if (countEl) countEl.innerText = response.commentsCount;
+            }
+        } else {
+            showToast("تعذر إضافة التعليق");
+        }
+    }
+</script>
+</body>
+</html>
